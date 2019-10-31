@@ -1,4 +1,4 @@
-# -*- coding uft-8 -*-
+# -*- coding: utf-8 -*-
 
 global url_facebook_login
 global ages_accept
