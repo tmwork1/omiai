@@ -1,3 +1,5 @@
+# -*- coding uft-8 -*-
+
 global url_facebook_login
 global ages_accept
 global areas_accept

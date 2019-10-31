@@ -19,6 +19,7 @@ def login():
     browser.find_element_by_name('email').send_keys(secrets.facebook_account)
     browser.find_element_by_name('pass').send_keys(secrets.facebook_pass)
     browser.find_element_by_name('login').click()
+    time.sleep(5)
 
 def leave_footprints():
     switch_window('https://www.omiai-jp.com/search')
@@ -48,6 +49,5 @@ def test():
 if __name__ == '__main__':
     #test()
     login()
-    time.sleep(2)
     leave_footprints()
     browser.quit()
