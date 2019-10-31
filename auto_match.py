@@ -1,5 +1,6 @@
 import time
 import settings
+import secrets
 from selenium import webdriver
 
 
@@ -15,8 +16,8 @@ def login():
     browser.get('https://fb.omiai-jp.com/');
     browser.find_element_by_class_name('js-register-btn-01').click()
     switch_window('Facebook')
-    browser.find_element_by_name('email').send_keys(settings.facebook_account)
-    browser.find_element_by_name('pass').send_keys(settings.facebook_pass)
+    browser.find_element_by_name('email').send_keys(secrets.facebook_account)
+    browser.find_element_by_name('pass').send_keys(secrets.facebook_pass)
     browser.find_element_by_name('login').click()
 
 def leave_footprints():
