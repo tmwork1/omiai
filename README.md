@@ -4,6 +4,7 @@ Automation for "Omiai"
 This python script operates chrome with chromedriver via selenium library, and will find girls you like in "Omiai (Japanese dating apps)".
 
 ## Verification environment & Requirement
+|  | version |
 |:-----------|:------------|
 | MacOS | 10.15.1 |
 | python | 3.7.0 |
