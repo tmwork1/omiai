@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import time
+import os
 import datetime
 import settings
 import secrets
@@ -42,7 +43,7 @@ def now():
     return str(datetime.datetime.now())[:-7].replace('-', '/')    
 
 def write_page_src():
-    with open('/Users/tomoo/work/omiai/page_src.txt', 'w') as f:
+    with open(os.getcwd() + '/page_src.txt', 'w') as f:
         f.write(browser.page_source)
 
 def switch_window(window_title):
@@ -76,13 +77,13 @@ def leave_footprints(person_list):
         if area not in settings.areas_accept:
             continue
         ess.click()
-        time.sleep(0.5)
+        time.sleep(1)
 
-        p = Person()
+        person = Person()
         person.time = now()
         person.name = browser.find_element_by_id('om-modal-member-detail-basis-nickname').text
-        p.age = age
-        p.area = area
+        person.age = age
+        person.area = area
         person.height = int(browser.find_element_by_id('om-modal-member-detail-height').text[-5:-2])
         person.body = browser.find_element_by_id('om-modal-member-detail-form').text[3:]
         person.education = browser.find_element_by_id('om-modal-member-detail-school-education').text[3:].replace('\n', ' ')
@@ -90,7 +91,7 @@ def leave_footprints(person_list):
         person.income = browser.find_element_by_id('om-modal-member-detail-annual-income').text[3:]
         person.hometown = browser.find_element_by_id('om-modal-member-detail-hometown-area').text[4:]
         person.inmate = browser.find_element_by_id('om-modal-member-detail-inmate').text[4:]
-        person_list.append(p)
+        person_list.append(person)
         
         browser.back()
 
@@ -110,7 +111,7 @@ if __name__ == '__main__':
     print("Browsing finished at " + now())
     
     print("# of people\t" + str(len(people)))    
-    with open('/Users/tomoo/work/omiai/people.txt', 'a') as f:
+    with open(os.getcwd() + '/people.txt', 'a') as f:
         for p in people:
             p.show()
             f.write(p.info())
