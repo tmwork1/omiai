@@ -45,7 +45,13 @@ browser = webdriver.Chrome('/usr/local/bin/chromedriver')
 
 
 def now():
-    return str(datetime.datetime.now())[:-7].replace('-', '/')    
+    return str(datetime.datetime.now())[:-7].replace('-', '/')
+
+def today():
+    return str(datetime.datetime.now())[:10].replace('-', '/')
+
+def year():
+    return str(datetime.datetime.now())[:4]
 
 
 def page_src():
@@ -72,8 +78,8 @@ def login():
 
     move('Omiai')
     if('https://www.omiai-jp.com/search#overlay:om-modal-pickup:' in browser.current_url):
-        browser.find_element_by_class_name('om-remove btn-dialog-close').click()
-        time.sleep(5)
+        browser.get('https://www.omiai-jp.com/search')
+        time.sleep(1)
     
     
 def get_person():
@@ -82,13 +88,16 @@ def get_person():
     person.name = browser.find_element_by_id('om-modal-member-detail-basis-nickname').text
     person.age = int(browser.find_element_by_id('om-modal-member-detail-basis-age').text[:2])
     person.area = browser.find_element_by_id('om-modal-member-detail-basis-area').text
-    person.height = int(browser.find_element_by_id('om-modal-member-detail-height').text[-5:-2])
     person.body = browser.find_element_by_id('om-modal-member-detail-form').text[3:]
     person.education = browser.find_element_by_id('om-modal-member-detail-school-education').text[3:].replace('\n', '-')
     person.job = browser.find_element_by_id('om-modal-member-detail-occupation').text[3:]
     person.income = browser.find_element_by_id('om-modal-member-detail-annual-income').text[3:]
     person.hometown = browser.find_element_by_id('om-modal-member-detail-hometown-area').text[4:]
     person.inmate = browser.find_element_by_id('om-modal-member-detail-inmate').text[4:]
+
+    tmp = browser.find_element_by_id('om-modal-member-detail-height').text[-5:-2]
+    if(tmp):
+        person.height = int(tmp) 
 
     pattern = r'user_id="(\d*?)" action="(.)*?" nickname="' + person.name + '"'
     result = re.search(pattern, page_src())
@@ -97,30 +106,60 @@ def get_person():
     return person
     
 
-def set_footprints():
-    browser.find_element_by_class_name('column').click()
+# Search who meets your conditions among "new members"
+def search_partners():
+    browser.find_element_by_xpath('//*[@id="om-global-menu"]/div[2]/ul/li[1]').click()
     time.sleep(1)
     browser.find_element_by_class_name('om-button-search-menu').click()
     browser.find_element_by_id('om-search-menu-fresh').click()
     browser.find_element_by_id('om-dialog-fresh-information-close').click()
     time.sleep(2)
     
-    people = []
-    elms = browser.find_elements_by_class_name('essential-line')
-    for elm in elms:
-        age = int(elm.text[:2])
-        area = elm.text.split(' ')[1]
-        if age not in settings.ages_accept:
-            continue
-        if area not in settings.areas_accept:
-            continue
+    people_fp = [] # contain Person object who was set a footprint
+    people_int = [] # contain Person object who was send "いいね"
+    i_loop = 0
+        
+    while len(people_fp) < 10 or i_loop < 100:
+        elms = browser.find_elements_by_class_name('essential-line')
+        for elm in elms:
+            if len(people_fp) >= 10:
+                break
+            
+            # Narrow the search results with their ages and areas.
+            age = int(elm.text[:2])
+            area = elm.text.split(' ')[1]
+            if age not in settings.ages_accept:
+                continue
+            if area not in settings.areas_accept:
+                continue
+            elm.click()
+            time.sleep(1)        
 
-        elm.click()
-        time.sleep(1)        
-        people.append(get_person())        
-        browser.back()
+            # Temporarily collect personal infomation from current personal page.
+            person = get_person()
+            people_fp.append(person)
+            
+            # Send "いいね" if conditions are met.
+            if True:
+                try:
+                    browser.find_element_by_xpath('//*[@id="om-member-detail-footer-button"]/div/div[1]/div[1]').click()
+                    time.sleep(1)
+                    people_int.append(person)
+                    browser.back()
+                    time.sleep(3)
 
-    return people
+                    # Search "new members" agein
+                    browser.find_element_by_xpath('//*[@id="om-search-header"]/div[1]/div/div/div').click()
+                    browser.find_element_by_id('om-search-menu-fresh').click()                    
+                    time.sleep(2)
+    
+                    break
+                except:
+                    pass
+
+        i_loop += 1
+
+    return people_fp, people_int
 
 
 def get_visitors():
@@ -128,14 +167,11 @@ def get_visitors():
     time.sleep(1)
 
     people = []
-    N = -1
+    i_loop = 0
 
-    while True:
-        N += 1
-        if(N > 100):
-            break
+    while len(people) < 10 and i_loop < 1000:
         try:
-            elm = browser.find_element_by_xpath('//*[@id="common-list"]/div[1]/div[' + str(N+1) + ']/div/div/div[2]/div[1]/div/div[1]')
+            elm = browser.find_element_by_xpath('//*[@id="common-list"]/div[1]/div[' + str(i_loop) + ']/div/div/div[2]/div[1]/div/div[1]')
             ActionChains(browser).move_to_element(elm)
             elm.click()
             time.sleep(1)
@@ -143,30 +179,75 @@ def get_visitors():
                 people.append(get_person())
                 browser.back()
         except:
-            continue
-    
+            pass
+
+        i_loop += 1
+        continue
+        
     return people
 
-        
+
+def get_matched():
+    browser.find_element_by_id('om-global-menu-column-message').click()
+    time.sleep(1)
+
+    pattern = r'data-user-id="(\d*?)"'
+    user_ids = re.findall(pattern, page_src())
+    N = len(user_ids)
+
+    elms = browser.find_elements_by_class_name('om-list-last-action-date')
+
+    people = []
+    if len(elms) != N:
+        print('Warning! # of UserID and action-date are not equal.')
+    else:
+        for i in range(N):
+            tmp = elms[i].text
+            if '前' in tmp or ':' in tmp:
+                tmp = today()
+            elif year() not in tmp:
+                tmp = year() + '/' + tmp
+            people.append(Person(time = tmp ,user_id = user_ids[i]))
+
+    return people
+
+    
     
 if __name__ == '__main__':
     print("Started at " + now())
 
-    login()
+    try:
+        login()
 
-    people_fp = set_footprints()
-    print("# of footprints\t" + str(len(people_fp)))    
-    with open(os.getcwd() + '/footprints.txt', 'a') as f:
-        for p in people_fp:
-            p.show()
-            f.write(p.info_secret())
+        people_fp, people_int = search_partners()
+        print("# of footprints\t" + str(len(people_fp)))    
+        with open(os.getcwd() + '/footprints.txt', 'a') as f:
+            for p in people_fp:
+                p.show()
+                f.write(p.info_secret())
+        
+        print("# of interests\t" + str(len(people_fp)))    
+        with open(os.getcwd() + '/interests.txt', 'a') as f:
+            for p in people_fp:
+                p.show()
+                f.write(p.info_secret())
 
-    people_vs = get_visitors()
-    print("# of visitors\t" + str(len(people_vs)))    
-    with open(os.getcwd() + '/visitor.txt', 'a') as f:
-        for p in people_vs:
-            p.show()
-            f.write(p.info_secret())
-    
+        people_vs = get_visitors()
+        print("# of visitors\t" + str(len(people_vs)))    
+        with open(os.getcwd() + '/visitors.txt', 'a') as f:
+            for p in people_vs:
+                p.show()
+                f.write(p.info_secret())
+
+        people_mch = get_matched()
+        print("# of matching\t" + str(len(people_mch)))    
+        with open(os.getcwd() + '/matching.txt', 'a') as f:
+            for p in people_mch:
+                p.show()
+                f.write(p.info_secret())
+            
+    except:
+        pass
+
     browser.quit()
     print("Finished at " + now())
