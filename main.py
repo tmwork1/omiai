@@ -6,6 +6,7 @@ import time
 import datetime
 import settings
 import secrets
+import traceback
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 
@@ -53,10 +54,12 @@ def today():
 def year():
     return str(datetime.datetime.now())[:4]
 
+def cwd():
+    return os.path.dirname(os.path.abspath(__file__)) + '/'
 
 def page_src():
     src = browser.page_source
-    with open(os.getcwd() + '/page_src.txt', 'w') as f:
+    with open(cwd() + '/page_src.txt', 'w') as f:
         f.write(src)
     return src
         
@@ -75,11 +78,11 @@ def login():
     browser.find_element_by_name('pass').send_keys(secrets.facebook_pass)
     browser.find_element_by_name('login').click()
     time.sleep(5)
-
     move('Omiai')
-    if('https://www.omiai-jp.com/search#overlay:om-modal-pickup:' in browser.current_url):
-        browser.get('https://www.omiai-jp.com/search')
-        time.sleep(1)
+
+    # Leave from "Today's pick up" page
+    browser.get('https://www.omiai-jp.com/search')
+    time.sleep(1)
     
     
 def get_person():
@@ -117,9 +120,11 @@ def search_partners():
     
     people_fp = [] # contain Person object who was set a footprint
     people_int = [] # contain Person object who was send "いいね"
+
+    n_limit = 10
     i_loop = 0
         
-    while len(people_fp) < 10 or i_loop < 100:
+    while len(people_fp) < n_limit or i_loop < 100:
         elms = browser.find_elements_by_class_name('essential-line')
         for elm in elms:
             if len(people_fp) >= 10:
@@ -155,7 +160,8 @@ def search_partners():
     
                     break
                 except:
-                    pass
+                    print('Exception occured when looking personal pages:')
+                    traceback.print_exc()
 
         i_loop += 1
 
@@ -167,9 +173,11 @@ def get_visitors():
     time.sleep(1)
 
     people = []
+
+    n_limit = 10
     i_loop = 0
 
-    while len(people) < 10 and i_loop < 1000:
+    while len(people) < n_limit and i_loop < 1000:
         try:
             elm = browser.find_element_by_xpath('//*[@id="common-list"]/div[1]/div[' + str(i_loop) + ']/div/div/div[2]/div[1]/div/div[1]')
             ActionChains(browser).move_to_element(elm)
@@ -221,33 +229,34 @@ if __name__ == '__main__':
 
         people_fp, people_int = search_partners()
         print("# of footprints\t" + str(len(people_fp)))    
-        with open(os.getcwd() + '/footprints.txt', 'a') as f:
+        with open(cwd() + 'footprints.txt', 'a') as f:
             for p in people_fp:
                 p.show()
                 f.write(p.info_secret())
         
         print("# of interests\t" + str(len(people_fp)))    
-        with open(os.getcwd() + '/interests.txt', 'a') as f:
+        with open(cwd() + 'interests.txt', 'a') as f:
             for p in people_fp:
                 p.show()
                 f.write(p.info_secret())
 
         people_vs = get_visitors()
         print("# of visitors\t" + str(len(people_vs)))    
-        with open(os.getcwd() + '/visitors.txt', 'a') as f:
+        with open(cwd() + 'visitors.txt', 'a') as f:
             for p in people_vs:
                 p.show()
                 f.write(p.info_secret())
 
         people_mch = get_matched()
         print("# of matching\t" + str(len(people_mch)))    
-        with open(os.getcwd() + '/matching.txt', 'a') as f:
+        with open(cwd() + 'matching.txt', 'a') as f:
             for p in people_mch:
                 p.show()
                 f.write(p.info_secret())
             
     except:
-        pass
+        print('Exception occured in main() method:')
+        traceback.print_exc()
 
     browser.quit()
     print("Finished at " + now())
