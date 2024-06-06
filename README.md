@@ -1,3 +1,4 @@
+## 概要
 Google Chromeを自動操作して、マッチングアプリ「omiai」でマッチングするまでの過程を自動化する。
 
 ## 動作環境
@@ -24,6 +25,3 @@ Google Chromeを自動操作して、マッチングアプリ「omiai」でマ�
 1. `secrets_dummy.py` を `secrets.py` に変更
 2. `secrets.py` に自分の Facebook アカウントとパスワードを書き込む。
 3. `python main.py`
-
-## 製作者
-[tmwork1](https://github.com/tmwork1)
