@@ -29,4 +29,4 @@ This python script operates chrome with chromedriver via selenium library, and w
 3. `python main.py`
 
 ## Author
-[TomooMari](https://github.com/TomooMari)
+[tmwork1](https://github.com/tmwork1)
