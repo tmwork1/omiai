@@ -10,20 +10,20 @@ Google Chromeを自動操作して、マッチングアプリ「omiai」でマ�
 | Selenium | 3.141.0 |
 | Omiai | - |
 
-## Install
+## 導入
 * Google Chrome
   * <https://support.google.com/chrome/answer/95346?co=GENIE.Platform%3DDesktop&hl=ja>
 * ChromeDriver
   * `pip install chromedriver-binary==78.0.3904.70`
 * Selenium
   * `pip install selenium`
-* Registration for "Omiai"
+* omiai
   * <https://fb.omiai-jp.com>
 
-## Usage
-1. Rename `secrets_dummy.py` to `secrets.py`
-2. Edit `secrets.py` and input your facebook account and password into variables `facebook_account` and `facebook_pass` respectively.
+## 使い方
+1. `secrets_dummy.py` を `secrets.py` に変更
+2. `secrets.py` に自分の Facebook アカウントとパスワードを書き込む。
 3. `python main.py`
 
-## Author
+## 製作者
 [tmwork1](https://github.com/tmwork1)
