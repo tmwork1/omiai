@@ -22,6 +22,5 @@ Google Chromeを自動操作して、マッチングアプリ「omiai」でマ�
   * <https://fb.omiai-jp.com>
 
 ## 使い方
-1. `secrets_dummy.py` を `secrets.py` に変更
-2. `secrets.py` に自分の Facebook アカウントとパスワードを書き込む。
-3. `python main.py`
+1. `secrets.py` に自分の Facebook アカウントとパスワードを書き込む。
+2. `python main.py`
